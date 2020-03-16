@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>综合学习系统</title>
+    <link rel="stylesheet" type="text/css" href="../../easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../../easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/bootstrap.min.css">
+    <script type="text/javascript" src="../../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../../easyui/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="../../bootstrap/bootstrap.min.js"></script>
+    <style>
+        .input-group-addon,.textbox.combo{border-radius:0;}
+        .userInfoBtn>a{margin: 0}
+        .tabs{background:#E1E1E8;border: 0}
+        .datagrid-wrap.panel-body.panel-body-noheader{padding: 0;border: 0}
+        .col-xs-7,.col-xs-5{padding: 0;overflow: hidden}
+        .initSpace{overflow: hidden;}
+        .input-group{margin-bottom: 8px;}
+        .paging{text-align: center}
+    </style>
+</head>
+<body style="background:#E1E1E8">
+<div class="row" style="margin: 2px 2px 2px 5px">
+    <div  class="col-xs-7">
+        <div class="input-group" style="margin: 10px 2px 5px 5px;">
+            <div class="input-group-addon">行政区划</div>
+            <input id="divIdTree" class="form-control" style="width: 55%">&nbsp;
+            <button onclick="fnBtn('menuManager')" type="button" class="btn btn-info" style="border-radius: 0;height: 28px;line-height: 14px">菜单管理</button>
+            &nbsp;
+            <button onclick="fnBtn('authManager')" type="button" class="btn btn-warning" style="border-radius: 0;height: 28px;line-height: 14px">权限管理</button>
+        </div>
+        <hr style="margin:0;height: 5px;"/>
+        <table width="100%" >
+            <tr>
+                <!--用户-->
+                <td width="48%" style="border: 1px solid black">
+                    <div class="userInfoBtn">
+                        <span style="font-weight: bold">&nbsp;&nbsp;用户信息:</span>
+                        <a onclick="fnBtn('userAdd')" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">添加</a>
+                        <a onclick="delBtn('userDel')" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true">删除</a>
+                        <a onclick="fnBtn('userEdit')" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true">修改</a>
+                    </div>
+                    <div>&nbsp;用户名搜索:<input id="userNameSearch" onkeyup="searchBtn('user')" type="text" style="border: 0;margin: 5px;"></div>
+                    <div class="initSpace" style="background: white">
+                        <table  id="userTab"></table>
+                    </div>
+                    <div class="paging">
+                        <a onclick="userPagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+                        <a onclick="userPagingClick('prePage')" ><img src="../../images/pre.png"></a>
+                        第&nbsp;<span id="userN">1</span>&nbsp;页 共&nbsp;<span id="userTotal">1</span>&nbsp;页
+                        <a onclick="userPagingClick('nextPage')"><img src="../../images/next.png"></a>
+                        <a onclick="userPagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+                        <a onclick="userPagingClick('refresh')"><img src="../../images/refresh.png"></a>
+                    </div>
+                    <hr style="margin: 0"/>
+                    <button onclick="fnBtn('userToRole')" type="button" class="btn btn-success" style="width: 100%;border-radius: 0">角色分配</button>
+                </td>
+                <td >&lt;&lt;</td>
+
+
+                <!--角色-->
+                <td width="48%" style="border: 1px solid black">
+                    <div class="userInfoBtn">
+                        <span style="font-weight: bold">&nbsp;&nbsp;角色信息:</span>
+                        <a onclick="fnBtn('roleAdd')" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">添加</a>
+                        <a onclick="delBtn('roleDel')" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true">删除</a>
+                        <a onclick="fnBtn('roleEdit')" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true">修改</a>
+                    </div>
+                    <div>&nbsp;角色名搜索:<input id="roleNameSearch" onkeyup="searchBtn('role')" type="text" style="border: 0;margin: 5px;"></div>
+                    <div class="initSpace" style="background: white">
+                        <table id="roleTab" style="width: 100%"> </table>
+                    </div>
+                    <div class="paging">
+                        <a onclick="rolePagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+                        <a onclick="rolePagingClick('prePage')" ><img src="../../images/pre.png"></a>
+                        第&nbsp;<span id="roleN">1</span>&nbsp;页 共&nbsp;<span id="roleTotal">1</span>&nbsp;页
+                        <a onclick="rolePagingClick('nextPage')"><img src="../../images/next.png"></a>
+                        <a onclick="rolePagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+                        <a onclick="rolePagingClick('refresh')"><img src="../../images/refresh.png"></a>
+                    </div>
+                    <button onclick="fnBtn('menuToRole')" type="button" class="btn btn-info" style="width: 100%;border-radius: 0">资源分配</button>
+                </td>
+                <td>&lt;&lt;</td>
+            </tr>
+        </table>
+    </div>
+
+    <!--菜单管理-->
+    <div class="col-xs-5" style="border-left: 1px solid black;">
+        <div id="tabs" class="easyui-tabs" style="width:100%;">
+            <div  id="menusManager"  title="菜单管理">
+                <ul id="menusTree"></ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!--用户表单tab-->
+<form id="userForm" style="display: none;">
+    <input id="userId" name="userId" type="hidden">
+    <div id="userHintInfo" style="text-align: center;color: red;height: 20px;"></div>
+    <div class="input-group" >
+        <div class="input-group-addon">用户名:</div>
+        <input id="loginName" name="loginName" type="text" class="form-control">
+    </div>
+    <div class="input-group" >
+        <div class="input-group-addon">姓名:</div>
+        <input id="name" name="name" type="text" class="form-control">
+    </div>
+
+    <div class="input-group" >
+        <div class="input-group-addon">密码:</div>
+        <input id="passWord" name="passWord" type="password" class="form-control">
+    </div>
+    <div class="input-group" >
+        <div class="input-group-addon">身份证号码:</div>
+        <input id="idCard" name="idCard" type="text" class="form-control">
+    </div>
+    <div class="input-group">
+        <span class="input-group-addon">是否启用:</span>
+        <select id="enable" name="enable" style="width: 100%;height:35px;">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <span class="input-group-addon">性别:</span>
+        <select id="sex" name="sex" style="width: 100%;height:35px;">
+            <option value="1">男</option>
+            <option value="2">女</option>
+        </select>
+    </div>
+    <div class="input-group" >
+        <div class="input-group-addon">邮箱:</div>
+        <input id="email" name="email" type="email" class="form-control">
+    </div>
+    <div class="input-group" >
+        <div class="input-group-addon">QQ:</div>
+        <input id="qq" name="qq" type="email" class="form-control">
+    </div>
+    <div class="input-group">
+        <div class="input-group-addon">行政区划</div>
+        <input id="userDivIdTree" class="form-control" style="width: 80%">
+    </div>
+    <a id="saveUserBtn" onclick="saveOnClick('user')" class="btn btn-info"  style="width: 100%;border-radius: 0">保存</a>
+</form>
+
+<!--角色表单tab-->
+<form id="roleForm" style="display: none;">
+    <input id="roleId" name="roleId" type="hidden">
+    <div id="roleHintInfo" style="text-align: center;color: red;height: 20px;"></div>
+    <div class="input-group" >
+        <div class="input-group-addon">角色名称:</div>
+        <input id="roleName" name="roleName" type="text" class="form-control">
+    </div>
+    <a id="saveRoleBtn" onclick="saveOnClick('role')" class="btn btn-info" style="width: 100%;border-radius: 0">保存</a>
+</form>
+
+<!--权限tab-->
+<div id="authDatagrid" style="display: none;">
+    <div><input id="authNameSearch" onkeyup="searchBtn('auth')" type="text" placeholder="权限名搜索">
+        <a onclick="fnBtn('authAdd')" class="easyui-linkbutton" data-options="plain:true">添加</a>
+        <a onclick="delBtn('authDel')" class="easyui-linkbutton" data-options="plain:true">删除</a>
+        <a onclick="fnBtn('authEdit')" class="easyui-linkbutton" data-options="plain:true">修改</a>
+    </div>
+    <div class="initSpace">
+        <table  id="authTab"></table>
+    </div>
+    <div class="paging">
+        <a onclick="authPagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+        <a onclick="authPagingClick('prePage')" ><img src="../../images/pre.png"></a>
+        第&nbsp;<span id="authN">1</span>&nbsp;页 共&nbsp;<span id="authTotal">1</span>&nbsp;页
+        <a onclick="authPagingClick('nextPage')"><img src="../../images/next.png"></a>
+        <a onclick="authPagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+        <a onclick="authPagingClick('refresh')"><img src="../../images/refresh.png"></a>
+    </div>
+</div>
+
+
+
+<!--用户分配角色-->
+<div id="userToRole" style="display: none;">
+    <table style="width: 100%">
+        <tr>
+            <td width="44%">
+                <div style="text-align: center;border-bottom: 1px solid black">已选角色</div>
+                <div class="choiceRole" style="overflow: hidden;">
+                    <table  id="selectedRoleTab"  style="width: 100%">
+                    </table>
+                </div>
+            </td>
+            <td width="10%" style="border-left: 1px solid black;border-right: 1px solid black">
+                <div style="height: 30px;"></div>
+                <div style="width: 12px;margin:0 auto;color: red" id="userToRoleWarning"></div>
+                <div style="height: 30px;"></div>
+                <button onclick="fnToRoleBtn('add')" type="button" class="btn btn-success" style="width: 100%;border-radius: 0">添加</button>
+                <div style="height: 30px;"></div>
+                <button onclick="fnToRoleBtn('remove')" type="button" class="btn btn-info" style="width: 100%;border-radius: 0">移除</button>
+                <div style="height:140px;"></div>
+            </td>
+            <td width="44%">
+                <div style="text-align: center;border-bottom: 1px solid black">可选角色</div>
+                <div class="choiceRole">
+                    <table  id="optionalRoleTab"  style="width: 100%">
+
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!--角色添加菜单-->
+<div id="menuToRole"  style="display: none">
+    <table style="width: 100%">
+        <tr>
+            <td width="44%">
+                <div style="color:green;text-align: center;border-bottom: 1px solid green">已有菜单</div>
+                <div class="choiceRole" style="overflow: hidden;">
+                    <ul id="selectedMenu" style="width: 100%"></ul>
+                </div>
+            </td>
+            <td width="8%" style="border-left: 1px solid black;border-right: 1px solid black;">
+                <div style="height: 30px;"></div>
+                <div style="width: 12px;margin:0 auto;color: red" id="menuToRoleWarning"></div>
+                <div style="height: 30px;"></div>
+                <button onclick="fnToMenuBtn('add')" type="button" class="btn btn-success" style="width: 100%;border-radius: 0">添加</button>
+                <div style="height: 30px;"></div>
+                <button onclick="fnToMenuBtn('remove')" type="button" class="btn btn-info" style="width: 100%;border-radius: 0">移除</button>
+                <div style="height:140px;"></div>
+            </td>
+            <td width="44%">
+                <div style="color:green;text-align: center;border-bottom: 1px solid green">可选菜单</div>
+                <div class="choiceRole">
+                    <ul  id="optionalMenu"  style="width: 100%"> </ul>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+
+<!--右键关闭tabs小窗口-->
+<div id="contextMenuWindow" class="easyui-menu" style="width:50px;background: #fafff1;display: none">
+    <div  onclick="rightClickBtn('add')">添加菜单</div>
+    <div class="menu-sep"></div>
+    <div  onclick="rightClickBtn('edit')">修改菜单</div>
+    <div class="menu-sep"></div>
+    <div  onclick="rightClickBtn('del')">删除菜单</div>
+    <div class="menu-sep"></div>
+</div>
+<!--右键关闭tabs小窗口-->
+<div id="onRowContextMenuWindow" class="easyui-menu" style="display: none">
+    <div onclick="rightClickBtn('authToRole')">分配权限</div>
+    <div  onclick="rightClickBtn('userToRole')">添加用户</div>
+</div>
+
+
+<!-- 菜单模态框（Modal） -->
+<div class="modal fade" id="myModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="margin: 5px;padding:2px;">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title" id="myModalLabel" style="text-align: center">菜单编辑</h5>
+            </div>
+            <div class="modal-body" style="padding:0 10px 0 10px">
+                <div style="height: 15px; color: red;text-align: center;margin-bottom: 5px" id="menuOperationWarning"></div>
+                <form id="menuForm">
+                    <input id="menuId" name="menuId" type="hidden">
+                    <input id="operationType" type="hidden">
+                    <div class="input-group">
+                        <span class="input-group-addon">是否一级菜单:</span>
+                        <select id="oneLevelMenu" onchange="oneLevelMenuOnChange(this.value)" style="width:100%;height:35px;">
+                            <option value="0">否</option>
+                            <option value="1">是</option>
+                        </select>
+                    </div>
+                    <div id="parentMenusDiv" class="input-group">
+                        <div class="input-group-addon">父级菜单</div>
+                        <input id="parentMenus" name="parentMenus" class="form-control" style="width:495px">
+                    </div>
+                    <div class="input-group">
+                        <div class="input-group-addon">菜单名称</div>
+                        <input id="menuName" name="menuName" class="form-control" >
+                    </div>
+                    <div class="input-group" >
+                        <div class="input-group-addon">菜单URL</div>
+                        <input id="menuUrl" name="menuUrl" class="form-control" >
+                    </div>
+                    <div class="input-group">
+                        <div class="input-group-addon">菜单图标</div>
+                        <input id="menuIconCls" name="menuIconCls" class="form-control" >
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">是否启用:</span>
+                        <select id="isFlay" name="isFlay" style="width:100%;height:35px;">
+                            <option value="1">是</option>
+                            <option value="0">否</option>
+                        </select>
+                    </div>
+                    <div class="input-group" >
+                        <div class="input-group-addon">菜单排序</div>
+                        <input id="menuSort" name="menuSort" class="form-control" >
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="text-align: center;padding:5px">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button  onclick="submitClick('save')" type="button" class="btn btn-primary" style="margin-left:30px;">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--角色添加权限模态框-->
+<div class="modal fade" id="authToRoleModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="margin: 5px;padding:2px;">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title" style="text-align: center">权限分配</h5>
+            </div>
+            <div class="modal-body" style="padding: 0">
+                <table style="width: 100%;height:300px">
+                    <tr>
+                        <td width="44%">
+                            <div style="color:green;text-align: center;border-bottom: 1px solid green">已有权限</div>
+                            <div style="height: 320px;overflow: hidden;">
+                                <table id="exitAuthTab" style="width: 100%"></table>
+                            </div>
+                            <div class="paging">
+                                <a onclick="exitAuthPagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+                                <a onclick="exitAuthPagingClick('prePage')" ><img src="../../images/pre.png"></a>
+                                第&nbsp;<span id="exitAuthN">1</span>&nbsp;页 共&nbsp;<span id="exitAuthTotal">1</span>&nbsp;页
+                                <a onclick="exitAuthPagingClick('nextPage')"><img src="../../images/next.png"></a>
+                                <a onclick="exitAuthPagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+                                <a onclick="exitAuthPagingClick('refresh')"><img src="../../images/refresh.png"></a>
+                            </div>
+                        </td>
+                        <td width="8%" style="border-left: 1px solid black;border-right: 1px solid black;">
+                            <div style="height: 30px;"></div>
+                            <div style="width: 12px;margin:0 auto;color: red" id="roleToAuthorityWarning"></div>
+                            <div style="height: 30px;"></div>
+                            <button onclick="authorityToRoleBtn('add')" type="button" class="btn btn-success" style="width: 100%;border-radius: 0">添加</button>
+                            <div style="height: 30px;"></div>
+                            <button onclick="authorityToRoleBtn('remove')" type="button" class="btn btn-info" style="width: 100%;border-radius: 0">移除</button>
+                            <div style="height:140px;"></div>
+                        </td>
+                        <td width="44%">
+                            <div style="color:green;text-align: center;border-bottom: 1px solid green">可选权限</div>
+                            <div style="height: 320px;overflow: hidden;">
+                                <table  id="optionalAuthTab"  style="width: 100%"> </table>
+                            </div>
+                            <div class="paging">
+                                <a onclick="optionalAuthPagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+                                <a onclick="optionalAuthPagingClick('prePage')" ><img src="../../images/pre.png"></a>
+                                第&nbsp;<span id="optionalAuthN">1</span>&nbsp;页 共&nbsp;<span id="optionalAuthTotal">1</span>&nbsp;页
+                                <a onclick="optionalAuthPagingClick('nextPage')"><img src="../../images/next.png"></a>
+                                <a onclick="optionalAuthPagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+                                <a onclick="optionalAuthPagingClick('refresh')"><img src="../../images/refresh.png"></a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer" style="text-align: center;padding:5px">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--角色添加用户模态框-->
+<div class="modal fade" id="userToRoleModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="margin: 5px;padding:2px;">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title" style="text-align: center">分配用户</h5>
+            </div>
+            <div class="modal-body" style="padding: 0">
+                <table style="width: 100%;height:300px">
+                    <tr>
+                        <td width="44%">
+                            <div style="color:green;text-align: center;border-bottom: 1px solid green">已有用户</div>
+                            <div style="height: 320px;overflow: hidden;">
+                                <table id="exitUserTab" style="width: 100%"></table>
+                            </div>
+                            <div class="paging">
+                                <a onclick="exitUserPagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+                                <a onclick="exitUserPagingClick('prePage')" ><img src="../../images/pre.png"></a>
+                                第&nbsp;<span id="exitUserN">1</span>&nbsp;页 共&nbsp;<span id="exitUserTotal">1</span>&nbsp;页
+                                <a onclick="exitUserPagingClick('nextPage')"><img src="../../images/next.png"></a>
+                                <a onclick="exitUserPagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+                                <a onclick="exitUserPagingClick('refresh')"><img src="../../images/refresh.png"></a>
+                            </div>
+                        </td>
+                        <td width="8%" style="border-left: 1px solid black;border-right: 1px solid black;">
+                            <div style="height: 30px;"></div>
+                            <div style="width: 12px;margin:0 auto;color: red" id="roleAddUserWarning"></div>
+                            <div style="height: 30px;"></div>
+                            <button onclick="userToRoleBtn('add')" type="button" class="btn btn-success" style="width: 100%;border-radius: 0">添加</button>
+                            <div style="height: 30px;"></div>
+                            <button onclick="userToRoleBtn('remove')" type="button" class="btn btn-info" style="width: 100%;border-radius: 0">移除</button>
+                            <div style="height:140px;"></div>
+                        </td>
+                        <td width="44%">
+                            <div style="color:green;text-align: center;border-bottom: 1px solid green">可选用户</div>
+                            <div style="height: 320px;overflow: hidden;">
+                                <table id="optionalUserTab"  style="width: 100%"> </table>
+                            </div>
+                            <div class="paging">
+                                <a onclick="optionalUserPagingClick('firstPage')"><img src="../../images/first.png"></a>&nbsp;
+                                <a onclick="optionalUserPagingClick('prePage')" ><img src="../../images/pre.png"></a>
+                                第&nbsp;<span id="optionalUserN">1</span>&nbsp;页 共&nbsp;<span id="optionalUserTotal">1</span>&nbsp;页
+                                <a onclick="optionalUserPagingClick('nextPage')"><img src="../../images/next.png"></a>
+                                <a onclick="optionalUserPagingClick('endPage')"><img src="../../images/end.png"></a>&nbsp;&nbsp;
+                                <a onclick="optionalUserPagingClick('refresh')"><img src="../../images/refresh.png"></a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer" style="text-align: center;padding:5px">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--权限模态框-->
+<div class="modal fade" id="authModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="margin: 5px;padding:2px;">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title" style="text-align: center">权限管理</h5>
+            </div>
+            <div class="modal-body" style="padding: 0">
+                <form id="authForm">
+                    <input id="authOperationType" type="hidden">
+                    <input id="authId" name="authId" type="hidden">
+                    <div id="authHintInfo" style="text-align: center;color: red;height: 20px;"></div>
+                    <div class="input-group" >
+                        <div class="input-group-addon">权限名:</div>
+                        <input id="authName" name="authName" type="text" class="form-control">
+                    </div>
+                    <div class="input-group" >
+                        <div class="input-group-addon">权限代码:</div>
+                        <input id="authCode" name="authCode" type="text" class="form-control">
+                    </div>
+                    <a id="saveAuthBtn" onclick="authSubmitClick()" class="btn btn-info" style="width: 100%;border-radius: 0">保存</a>
+                </form>
+            </div>
+            <div class="modal-footer" style="text-align: center;padding:5px">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 信息删除确认 -->
+<div class="modal fade" id="delcfmModel">
+    <div class="modal-dialog">
+        <div class="modal-content message_align">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">提示信息</h4>
+            </div>
+            <div class="modal-body">
+                <p style="color: red">删除后不可恢复;您确认要删除吗？</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="url"/>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <a  onclick="submitClick('del')" class="btn btn-success" data-dismiss="modal">确定</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>
+<script>
+
+    var userToRole_userId;
+    var allToRole_roleId;
+    var menuToRole_menuId;
+
+    var menu_id;
+    var menu_name;
+    var menu_parentId;
+    var menu_url;
+    var menu_iconCls;
+    var menu_enable;
+    var menu_sort;
+
+    var all_pageSize=10;   //每页显示条数
+
+    //用户分页参数
+    var user_totalRecord=1; //总记录数
+    var user_currentPage=1; //当前页
+    var user_pageStart=0; //起始页
+    //角色分页参数
+    var role_totalRecord=1;
+    var role_currentPage=1;
+    var role_pageStart=0;
+    //权限分页参数
+    var auth_totalRecord=1;
+    var auth_currentPage=1;
+    var auth_pageStart=0;
+
+    //已存在用户分页参数
+    var exitUser_totalRecord=10;
+    var exitUser_currentPage=1;
+    var exitUser_pageStart=0;
+
+    //可选用户分页参数
+    var optionalUser_totalRecord=1;
+    var optionalUser_currentPage=1;
+    var optionalUser_pageStart=0;
+
+    //已存在权限分页参数
+    var exitAuth_totalRecord=10;
+    var exitAuth_currentPage=1;
+    var exitAuth_pageStart=0;
+
+    //可选权限分页参数
+    var optionalAuth_totalRecord=1;
+    var optionalAuth_currentPage=1;
+    var optionalAuth_pageStart=0;
+
+
+    $(function () {
+        $('.col-xs-7,.col-xs-5').height($(window).height()-30);
+        $('.initSpace').height($(window).height()-240);
+        $("#menus,#userForm,#roleForm").height($(window).height());
+        $('.choiceRole').height($(window).height()-150);
+        $('#menusManager').height($(window).height());
+        administrativedivision();
+        getRole();
+        getAllMenusTree();
+        initTab();
+    });
+
+    function oneLevelMenuOnChange(param) {
+      if (param=='1'){
+          $('#parentMenusDiv').hide();
+          $('#parentMenus').combotree("setValue",0);
+      }else{
+          $('#parentMenusDiv').show();
+          if ($('#operationType').val()=='add')
+              $('#parentMenus').combotree("setValue",menu_id);
+          else
+              $('#parentMenus').combotree("setValue",menu_parentId);
+      }
+
+    if ($('#parentMenusDiv').is(":visible")&& $('#parentMenus').val()==0){
+        $('#parentMenus').combotree("setValue","");
+    }
+
+
+    }
+
+    //获取行政区划
+    function administrativedivision() {
+        $('#divIdTree').combotree({
+            url: '/administrativedivdsionController/getAllAdministrativedivisionList',
+            onLoadSuccess: function (nodes) {
+                $("#divIdTree").combotree('tree').tree("collapseAll");
+                var roots =$('#divIdTree').combotree('tree').tree('getRoots');
+                $("#divIdTree").combotree("setValue",roots[0]);
+                var divId=$("#divIdTree").val();
+                getUser(divId,"66");
+            },
+            onSelect:function(nodes){
+                getUser(nodes.id,"66");
+            }
+        });
+    }
+
+
+    function getAllMenusTree() {
+        $("#menusTree").tree({
+            url :'/menuController/getAllMenuList',
+            animate:true,
+            onLoadSuccess: function (nodes) {//数据加载成功后触发
+                var roots =$('#menusTree').tree('getRoots');
+                for (var i=0;i<roots.length;i++){
+                    if(i==0){
+                        $('#menusTree').tree('expand',roots[i].target);
+                    }else {
+                        $('#menusTree').tree('collapse',roots[i].target);
+                    }
+                }
+            },
+            onContextMenu : function(e,nodes){
+                getParam(nodes);
+                e.preventDefault(); //阻止默认事件
+                $('#contextMenuWindow').menu('show', { // 显示右键菜单
+                    left: e.pageX,
+                    top: e.pageY
+                });
+            }
+        });
+    }
+
+
+    //封装参数
+    function getParam(nodes) {
+        console.log(nodes.id+"/"+nodes.text+"/"+nodes.pid+"/"
+            +nodes.attributes.url+"/"+nodes.iconCls+"/"+nodes.attributes.url+"/"
+        +nodes.attributes.enable+"/"+nodes.attributes.sort);
+        menu_id=nodes.id;
+        menu_name=nodes.text;
+        menu_parentId=nodes.pid;
+        menu_iconCls=nodes.iconCls;
+        menu_url=nodes.attributes.url;
+        menu_enable=nodes.attributes.enable;
+        menu_sort=nodes.attributes.sort;
+    }
+
+
+    //右击菜单事件
+    function rightClickBtn(param) {
+        if (param=='authToRole'){
+            $('#authToRoleModal').modal({ backdrop: false});
+            getSelectAuthority(allToRole_roleId,exitAuth_pageStart,null);
+            $('#roleToAuthorityWarning').html("");
+            return;
+        }
+        if (param=='userToRole'){
+            $('#userToRoleModal').modal({ backdrop: false});
+            getSelectUser(allToRole_roleId,exitUser_pageStart,null);
+            $('#roleAddUserWarning').html("");
+            return;
+        }
+
+        $('#parentMenus').combotree({
+            url: '/menuController/getAllMenuList',
+            editable:true,
+            onLoadSuccess: function () {
+                $("#parentMenus").combotree('tree').tree("collapseAll");
+            }
+        });
+
+        if (param=='add'){
+            $('#myModal').modal({ backdrop: false});
+            //将表单清空
+            $('#menuForm')[0].reset();
+            $('#operationType').val('add');
+           $("#parentMenus").combotree("setValue",menu_id);
+
+        }else if (param=='edit'){
+            $('#myModal').modal({ backdrop: false});
+            $('#menuId').val(menu_id);
+            $('#menuName').val(menu_name);
+            $('#menuUrl').val(menu_url);
+            $('#menuIconCls').val(menu_iconCls);
+            $('#isFlay').val(menu_enable);
+            $('#menuSort').val(menu_sort);
+            $('#operationType').val('edit');
+            $("#parentMenus").combotree("setValue",menu_parentId);
+
+            if ($('#parentMenus').val()==0){
+                $('#oneLevelMenu').val(1);
+                $('#parentMenusDiv').hide();
+            }else {
+                $('#oneLevelMenu').val(0);
+            }
+        }else if (param=='del'){
+            $('#delcfmModel').modal({ backdrop: false});
+        }
+        $('#menuOperationWarning').html("");
+    }
+
+    //菜单操作提交按钮
+    function submitClick(param){
+        var url;
+        var data;
+        if (param=='save'){
+            var serializeData=$('#menuForm').serialize();
+            //表单序列化后出现乱码，使用decodeURIComponent解码
+            data= decodeURIComponent(serializeData,true);
+            if ($('#operationType').val()=='add'){
+                url='/menuController/addMenus'
+            } else if ($('#operationType').val()=='edit') {
+                url='/menuController/editMenus'
+            }
+        } else if (param=='del'){
+            data='menuId='+menu_id;
+            url='/menuController/delMenus'
+        }
+        $.ajax({
+            type: 'POST',
+            url:url,
+            data:data,
+            async:true,
+            success:function (data) {
+                $('#menuOperationWarning').html(data);
+                getAllMenusTree();
+            }
+        });
+    }
+
+
+    //权限提交按钮
+    function authSubmitClick(){
+        var url;
+        var data;
+        var serializeData=$('#authForm').serialize();
+        //表单序列化后出现乱码，使用decodeURIComponent解码
+        data= decodeURIComponent(serializeData,true);
+        if ($('#authOperationType').val()== 'add'){
+            url='/authController/addAuthority'
+        } else if ($('#authOperationType').val()== 'edit') {
+            url='/authController/editAuthority'
+        }
+        $.ajax({
+            type: 'POST',
+            url:url,
+            data:data,
+            async:true,
+            success:function (data) {
+                alert(data);
+                getAuthotity(null);
+            }
+        });
+    }
+
+    function searchBtn(data) {
+        if (data=='user'){
+            var divId = $('#divIdTree').val();
+            var userName = $('#userNameSearch').val();
+            getUser(divId,userName);
+        }else if (data=='role'){
+            var roleName = $('#roleNameSearch').val();
+            getRole(roleName)
+        }else if (data=='auth'){
+            var authName = $('#authNameSearch').val();
+            getAuthotity(authName)
+        }
+
+    }
+
+    function getUser(divId,userName) {
+        $.ajax({
+            type: 'POST',
+            url: '/userController/getUserListBydivId',
+            data:{"divId":divId,"userName":userName,'pageStart':user_pageStart, 'pageSize':all_pageSize },
+            async: true,
+            dataType : "json",
+            success: function (data) {
+                //alert(data.userList[0].loginName);
+                user_totalRecord=data.totalCount;
+                $('#userTab').datagrid('loadData',data.userList);
+                $('#userN').html(user_currentPage);
+                $('#userTotal').html(Math.ceil(user_totalRecord/all_pageSize));
+            }
+        })
+    }
+
+    function getRole(roleName) {
+        $.ajax({
+            type: 'POST',
+            url: '/roleController/getRole',
+            data:{'roleName':roleName,'pageStart':role_pageStart, 'pageSize':all_pageSize },
+            async: true,
+            dataType : "json",
+            success: function (data) {
+                role_totalRecord=data.totalCount;
+                $('#roleTab').datagrid('loadData',data.roleList);
+                $('#roleN').html(role_currentPage);
+                $('#roleTotal').html(Math.ceil(role_totalRecord/all_pageSize));
+            }
+        })
+    }
+
+    //添加tabs
+    function fnBtn(data) {
+        //获取所选数据表格总数
+        var userDataGrids ="";
+        var roleDataGrids ="";
+        var title="";
+        var content="";
+        var roleId = "";
+        if (data=='userAdd') {
+            title="用户信息添加";
+            content= $("#userForm").html();
+            addTabs(title,content);
+            $("#userDivIdTree").combotree("setValue",$('#divIdTree').val());
+        }else if (data=='userEdit'){
+            userDataGrids =$("#userTab").datagrid("getSelections");
+            if (userDataGrids.length<1){
+                alert("请选择修改用户");
+                return;
+            }else if (userDataGrids.length>1){
+                alert("一次只能选择一个用户修改");
+                return;
+            }
+            title="用户信息修改";
+            content= $("#userForm").html();
+            addTabs(title,content);
+            //将数据表格中的数据回显到表单中
+            $('#userId').val(userDataGrids[0].userId);
+            $('#loginName').val(userDataGrids[0].loginName).attr("readOnly",true);
+            $('#name').val(userDataGrids[0].name);
+            $('#passWord').val(userDataGrids[0].passWord);
+            $('#enable').val(userDataGrids[0].enable);
+            $('#idCard').val(userDataGrids[0].idCard);
+            $('#qq').val(userDataGrids[0].qq);
+            $('#sex').val(userDataGrids[0].sex);
+            $('#email').val(userDataGrids[0].email);
+            $("#divId").combotree("setValue",userDataGrids[0].divId);
+        } else if(data=='roleAdd'){
+            title="角色信息添加";
+            content= $("#roleForm").html();
+            addTabs(title,content);
+        }else if (data=='roleEdit'){
+            roleDataGrids =$("#roleTab").datagrid("getSelections");
+            if (roleDataGrids.length<1){
+                alert("请选择要修改的角色");
+                return;
+            }else if (roleDataGrids.length>1){
+                alert("一次只能选择一个角色修改");
+                return;
+            }
+            title="角色信息修改";
+            content= $("#roleForm").html();
+            addTabs(title,content);
+            //将数据表格中的数据回显到表单中
+            $('#roleId').val(roleDataGrids[0].roleId);
+            $('#roleName').val(roleDataGrids[0].roleName);
+        }else if (data == 'userToRole'){
+            userDataGrids =$("#userTab").datagrid("getSelections");
+            if (userDataGrids.length<1){
+                alert("请选择用户");
+                return;
+            }else if (userDataGrids.length>1) {
+                alert("一次只能选择一个用户进行分配")
+                return;
+            }
+            title="分配角色";
+            content= $("#userToRole").html();
+            addTabs(title,content);
+            userToRole_userId=userDataGrids[0].userId;
+            initselectTab(userToRole_userId);
+
+        }else if (data == 'menuToRole'){
+            roleDataGrids =$("#roleTab").datagrid("getSelections");
+            if (roleDataGrids.length<1){
+                alert("请选择角色");
+                return;
+            }
+            title="添加功能菜单";
+            content= $("#menuToRole").html();
+            addTabs(title,content);
+            allToRole_roleId=roleDataGrids[0].roleId;
+            getMenus($("#selectedMenu"),allToRole_roleId,"existMenu");
+            getMenus($("#optionalMenu"),allToRole_roleId,"optionalMenu");
+            //先清空之前赋予的值
+            menuToRole_menuId='';
+        }else if (data =='menuManager'){
+            closeTabs();
+            //将'菜单管理'tabs显示
+            $('#tabs').tabs('getTab',"菜单管理").panel('options').tab.show();
+            //设置容器高度
+            $('#menusManager').height($(window).height());
+        }else if (data =='authManager'){
+            title="权限管理";
+            content= $("#authDatagrid").html();
+            addTabs(title,content);
+            $("#authTab").height($(window).height());
+            getAuthotity(null);
+        }else if(data =='authAdd'){
+            $('#authForm')[0].reset();
+
+            $('#authModal').modal({ backdrop: false});
+            //清空表单
+            $('#authOperationType').val('add');
+        }else if(data == 'authEdit'){
+            var authDataGrids =$("#authTab").datagrid("getSelections");
+            if (authDataGrids.length<1){
+                alert('请选择要修改的权限');
+                return;
+            }
+            $('#authModal').modal({ backdrop: false});
+            $('#authOperationType').val('edit');
+            $('#authId').val(authDataGrids[0].authId);
+            $('#authCode').val(authDataGrids[0].authCode);
+            $('#authName').val(authDataGrids[0].authName);
+
+        }
+    }
+
+    //关闭打开的tabs
+    function closeTabs() {
+        //关闭打开的tabs
+        var tab = $('#tabs').tabs('tabs');
+        for (var i=0;i<tab.length;i++){
+            var openTitle =tab[i].panel('options').title;
+            if (openTitle!='菜单管理') {//关闭除了'菜单管理'之外的所有tabs
+                $('#tabs').tabs('close', openTitle);
+            }
+        }
+    }
+
+    function addTabs(title,content) {
+        //关闭打开的tabs
+        closeTabs();
+        //将'菜单管理'tabs隐藏
+        $('#tabs').tabs('getTab',"菜单管理").panel('options').tab.hide();
+        //添加tabs
+        $('#tabs').tabs('add',{
+            title:title,
+            content:content,
+            iconCls:'icon-bullet_home'
+        });
+
+        if (title =='用户信息添加'|| title == '用户信息修改') {
+            //加行政区划树
+            $('#userDivIdTree').combotree({
+                url: '/administrativedivdsionController/getAllAdministrativedivisionList',
+                onLoadSuccess: function () {
+                    $("#divIdTree").combotree('tree').tree("collapseAll");
+                    $("#userDivIdTree").combotree("setValue",$("#divIdTree").val());
+                }
+            });
+
+        }
+    }
+
+
+    function  getAuthotity(authName){
+        $('#authTab').datagrid({
+            fit:true,
+            columns:[[
+                {field:'authId',title:'权限ID',align:'center'},
+                {field:'authName',title:'权限名称',width:'45%',align:'center'},
+                {field:'authCode',title:'权限代码',width:'45%',align:'center'}
+            ]],
+            showHeader:false,
+            singleSelect:true
+        });
+        $.ajax({
+            type: 'POST',
+            url: '/authController/getAuthByName',
+            data:{"authName":authName,'pageStart':auth_pageStart, 'pageSize':all_pageSize },
+            async: true,
+            dataType : "json",
+            success: function (data) {
+                //alert(data.userList[0].loginName);
+                auth_totalRecord=data.totalCount;
+                $('#authTab').datagrid('loadData',data.authList);
+                $('#authN').html(auth_currentPage);
+                $('#authTotal').html(Math.ceil(auth_totalRecord/all_pageSize));
+            }
+        })
+    }
+
+    //用户_角色_添加_修改
+    function saveOnClick(data) {
+        var userForm ={
+            'userId':$('#userId').val(),
+            'loginName':$('#loginName').val(),
+            'name':$('#name').val(),
+            'passWord':$('#passWord').val(),
+            'enable':$('#enable').val(),
+            'idCard':$('#idCard').val(),
+            'email':$('#email').val(),
+            'sex':$('#sex').val(),
+            'qq':$('#qq').val(),
+            'divId':$("#userDivIdTree").val()
+        };
+
+        var roleForm ={
+            'roleId':$('#roleId').val(),
+            'roleName':$('#roleName').val()
+        };
+
+
+        //用户新增修改
+        if (data == 'user'){
+            if ($('#loginName').val()==""){
+                $('#userHintInfo').html('用户名不能为空');
+                return;
+            }
+            if ($('#passWord').val()=='') {
+                $('#userHintInfo').html('密码不能为空');
+                return;
+            }
+            var url = '';
+            if ($('#userId').val()==''){
+                url='/userController/saveUser';
+            }else {
+                url='/userController/updateUser';
+            }
+            console.log(userForm);
+            $.ajax({
+                type: 'POST',
+                url:url,
+                data:userForm,
+                async:true,
+                success: function (data){
+                    $('#userHintInfo').html(data);
+                    if (data == '新增成功'|| data == '修改成功') {
+                        $('#saveUserBtn').addClass('disabled');//禁用按钮
+                        getUser($('#divIdTree').val(), "66");//更新用户
+                    }
+                }
+            });
+
+        } else{//角色新增修改
+            if ($('#roleName').val()==""){
+                $('#roleHintInfo').html('角色名不能为空');
+                return;
+            }
+            var url = '';
+            if ($('#roleId').val()==''){
+                url='/roleController/saveRole';
+            }else {
+                url='/roleController/updateRole';
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:roleForm,
+                async:true,
+                //dataType:'json',
+                success:function (data) {
+                    $('#roleHintInfo').html(data);
+                    if (data == '保存成功'|| data == '修改成功') {
+                        $('#saveRoleBtn').addClass('disabled');//禁用按钮
+                        getRole();//更新角色
+                    }
+                }
+            });
+        }
+    }
+
+
+    function delBtn(param) {
+        if (param == 'userDel'){
+            var userDataGrids =$("#userTab").datagrid("getSelections");
+            if (userDataGrids.length<1){
+                alert("请选择要删除的用户");
+            }else{
+                for (var i=0;i<userDataGrids.length;i++){
+                    $.ajax({
+                        url:'/userController/delUser',
+                        data:{'userId':userDataGrids[i].userId},
+                        async:true,
+                        success:function (data) {
+                            alert(data);
+                            getUser($('#divIdTree').val(), "66");//更新用户
+                        }
+                    });
+                }
+            }
+        } else if (param == 'roleDel') {
+            var roleDataGrids =$("#roleTab").datagrid("getSelections");
+            if (roleDataGrids.length<1){
+                alert("请选择要删除的角色");
+            }else{
+                for (var i=0;i<roleDataGrids.length;i++){
+                    $.ajax({
+                        url:'/roleController/delRole',
+                        data:{'roleId':roleDataGrids[i].roleId},
+                        async:true,
+                        success:function (data) {
+                            alert(data);
+                            getRole();//更新角色
+                        }
+                    });
+                }
+            }
+        }else if (param == 'authDel') {
+            var authDataGrids =$("#authTab").datagrid("getSelections");
+            if (authDataGrids.length<1){
+                alert("请选择要删除的权限");
+            }else{
+                for (var i=0;i<authDataGrids.length;i++){
+                    $.ajax({
+                        url:'/authController/delAuthority',
+                        data:{'authId':authDataGrids[i].authId},
+                        async:true,
+                        success:function (data) {
+                            alert(data);
+                            getAuthotity(null);//刷新权限列表
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+
+    function fnToRoleBtn(param){
+        var selecteRoleTab ="";
+        var url ="";
+
+        if (param == 'add'){//添加
+            selecteRoleTab=$("#optionalRoleTab").datagrid("getSelections");
+            url='/roleController/addUserToRole';
+            if (selecteRoleTab.length<1){
+                alert("请选择可添加的角色");
+                return;
+            }
+        }else {//移除
+            selecteRoleTab=$("#selectedRoleTab").datagrid("getSelections");
+            url='/roleController/delUserToRole';
+            if (selecteRoleTab.length<1){
+                alert("请选择已有角色");
+                return;
+            }
+        }
+        for (var i=0;i<selecteRoleTab.length;i++){
+            $.ajax({
+                url:url,
+                data:{'userId':userToRole_userId,'roleId':selecteRoleTab[i].roleId},
+                //async:true,
+                success:function (data) {
+                    $('#userToRoleWarning').html(data);
+                    initselectTab(userToRole_userId);
+                }
+            });
+        }
+    }
+
+
+    function fnToMenuBtn(param){
+        if (menuToRole_menuId==''){
+            alert('请选择要操作的菜单');
+            return;
+        }
+        var url ="";
+
+        if (param == 'add'){//添加
+            url='/roleController/addMenuToRole';
+        }else {//移除
+            url='/roleController/delMenuToRole';
+        }
+        $.ajax({
+            url:url,
+            data:{'roleId':allToRole_roleId,'menuId':menuToRole_menuId},
+            async:true,
+            success:function (data) {
+                $('#menuToRoleWarning').html(data);
+                getMenus($("#selectedMenu"),allToRole_roleId,"existMenu");
+                getMenus($("#optionalMenu"),allToRole_roleId,"optionalMenu");
+            }
+        });
+    }
+
+    function getMenus(selecteMenu,roleId,selectMenu) {
+        var url="";
+        if (selectMenu=='existMenu'){
+            url='/roleController/getExistMenuByRoleId?roleId='+roleId+'';
+        }
+        if (selectMenu=='optionalMenu') {
+            url='/roleController/getOptionalMenuByRoleId?roleId='+roleId+'';
+        }
+        selecteMenu.tree({
+            url :url,
+            //animate:true,
+            //lines:true,
+            parentField : 'pid',
+            //选择节点时触发
+            onSelect:function(nodes){
+                var url=nodes.attributes.url;
+                if(url==null || url==""){
+                    $(this).tree('collapseAll');
+                    if(nodes.state=='open'){
+                        $(this).tree('collapse', nodes.target);
+                    }else{
+                        $(this).tree('expand', nodes.target);
+                    }
+                }
+            },
+            //数据加载成功后触发
+            onLoadSuccess: function (nodes) {
+                var roots =selecteMenu.tree('getRoots');
+                for (var i=0;i<roots.length;i++){
+                    if(i==0){
+                        selecteMenu.tree('expand',roots[i].target);
+                    }else {
+                        selecteMenu.tree('collapse',roots[i].target);
+                    }
+                }
+            },
+            onSelect:function(nodes){
+                menuToRole_menuId=nodes.id
+            }
+        })
+
+
+    }
+
+    function getSelectAuthority(param,pageStart,distinguishParam) {
+        $('#exitAuthTab,#optionalAuthTab').datagrid({
+            columns: [[
+                {field: 'authId', title: '权限ID', hidden: true},
+                {field: 'authName', title: '权限名称', width: '120%', align: 'center'}
+            ]],
+            showHeader: false
+        });
+        $.ajax({
+            type: "POST",
+            url: '/roleController/getSelectAuthority',
+            data:{'roleId':param,'pageStart':pageStart, 'pageSize':all_pageSize,'distinguishParam':distinguishParam},
+            async: true,
+            dataType: "json",
+            success: function (data) {
+                if (data.msg=='exitList'){
+                    $('#exitAuthTab').datagrid('loadData', data.exitList);
+                    return;
+                } else if (data.msg=='optionalList'){
+                    $('#optionalAuthTab').datagrid('loadData', data.optionalList);
+                    return;
+                }
+                $('#exitAuthTab').datagrid('loadData', data.exitList);
+                exitAuth_totalRecord=data.exitAuth_totalRecord;
+                $('#exitAuthTotal').html(Math.ceil(exitAuth_totalRecord/all_pageSize));
+
+                $('#optionalAuthTab').datagrid('loadData', data.optionalList);
+                optionalAuth_totalRecord=data.optionalAuth_totalRecord;
+                $('#optionalAuthTotal').html(Math.ceil(optionalAuth_totalRecord/all_pageSize));
+            },
+        });
+    }
+
+    function getSelectUser(param,pageStart,distinguishParam){
+        $('#exitUserTab,#optionalUserTab').datagrid({
+            columns:[[
+                {field:'userId',title:'用户ID',hidden:true},
+                {field:'name',title:'用户名称',width:'280',align:'center'}
+            ]],
+            showHeader:false
+        });
+
+        $.ajax({
+            type: "POST",
+            url: '/roleController/getSelectUser',
+            data:{'roleId':param,'pageStart':pageStart, 'pageSize':all_pageSize,'distinguishParam':distinguishParam},
+            async: true,
+            dataType: "json",
+            success: function (data) {
+                if (data.msg=='exitList'){
+                    $('#exitUserTab').datagrid('loadData', data.exitList);
+                    return;
+                } else if (data.msg=='optionalList'){
+                    $('#optionalUserTab').datagrid('loadData', data.optionalList);
+                    return;
+                }
+
+                $('#exitUserTab').datagrid('loadData', data.exitList);
+                exitUser_totalRecord=data.exitUser_totalRecord;
+                $('#exitUserTotal').html(Math.ceil(exitUser_totalRecord/all_pageSize));
+
+                $('#optionalUserTab').datagrid('loadData', data.optionalList);
+                optionalUser_totalRecord=data.optionalUser_totalRecord;
+                $('#optionalUserTotal').html(Math.ceil(optionalUser_totalRecord/all_pageSize));
+            }
+        });
+
+    }
+
+    function authorityToRoleBtn(param){
+        var selectAuthDataGrids;
+        var url;
+        if (param=='add'){
+            selectAuthDataGrids =$("#optionalAuthTab").datagrid("getSelections");
+            url='/roleController/addAuthorityToRole';
+        }else if (param=='remove'){
+            selectAuthDataGrids =$("#exitAuthTab").datagrid("getSelections");
+            url='/roleController/removeaAuthorityToRole';
+        }
+        for (var i=0;i<selectAuthDataGrids.length;i++){
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: {'roleId': allToRole_roleId,"authId":selectAuthDataGrids[i].authId},
+                async: true,
+                dataType: "json",
+                success: function (data) {
+                    $('#roleToAuthorityWarning').html(data);
+                    getSelectAuthority(allToRole_roleId,exitAuth_pageStart,null);
+                }
+            });
+        }
+    }
+
+
+    function userToRoleBtn(param){
+        var selectUserDataGrids;
+        var url;
+        if (param=='add'){
+            selectUserDataGrids =$("#optionalUserTab").datagrid("getSelections");
+            url='/roleController/addUserToRole';
+        }else if (param=='remove'){
+            selectUserDataGrids =$("#exitUserTab").datagrid("getSelections");
+            url='/roleController/delUserToRole';
+        }
+        for (var i=0;i<selectUserDataGrids.length;i++){
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: {'roleId': allToRole_roleId,"userId":selectUserDataGrids[i].userId},
+                async: true,
+                dataType: "json",
+                success: function (data) {
+                    $('#roleAddUserWarning').html(data);
+                    getSelectUser(allToRole_roleId,exitUser_pageStart,null);
+                }
+            });
+        }
+    }
+
+
+    function initselectTab(userId) {
+        $('#selectedRoleTab').datagrid({
+            columns:[[
+                {field:'roleId',title:'角色ID',hidden:true},
+                {field:'roleName',title:'角色名称',width:'120%',align:'center'}
+            ]],
+            showHeader:false
+        });
+
+        $('#optionalRoleTab').datagrid({
+            columns:[[
+                {field:'roleId',title:'角色ID',hidden:true},
+                {field:'roleName',title:'角色名称',width:'120%',align:'center'}
+            ]],
+            showHeader:false
+        });
+        $.ajax({
+            type:"POST",
+            url:'/roleController/selectedRoleListByUserId',
+            data:{'userId':userId},
+            async:true,
+            dataType : "json",
+            success: function (data){
+                $('#selectedRoleTab').datagrid('loadData',data);
+            },
+            error: function (XMLResponse){
+                alert(XMLResponse.status);
+                alert(XMLResponse.readyState);
+                alert(XMLResponse.responseText);
+            }
+        });
+        $.ajax({
+            type:"POST",
+            url:'/roleController/optionalRoleListByUserId',
+            data:{'userId':userId},
+            async:true,
+            dataType : "json",
+            success: function (data){
+                $('#optionalRoleTab').datagrid('loadData',data);
+            }
+        });
+    }
+
+    function  initTab(){
+        $('#userTab').datagrid({
+            columns:[[
+                {field:'userId',title:'用户ID',align:'center'},
+                {field:'loginName',title:'用户名',width:'110',align:'center'},
+                {field:'name',title:'姓名',width:'110',align:'center'},
+                {field:'passWord',title:'密码',hidden:true},
+                {field:'email',title:'邮箱',hidden:true},
+                {field:'idCard',title:'身份证号码',hidden:true},
+                {field:'sex',title:'性别',hidden:true},
+                {field:'qq',title:'QQ',hidden:true},
+                {field:'enable',title:'是否可用',hidden:true},
+                {field:'divId',title:'行政区划ID',hidden:true}
+            ]],
+            showHeader:false,
+            singleSelect:true
+        });
+
+        $('#roleTab').datagrid({
+            columns:[[
+                {field:'roleId',title:'角色ID',width:'80',align:'center'},
+                {field:'roleName',title:'角色名称',width:'190',align:'center'},
+            ]],
+            showHeader:false,
+            singleSelect:true,
+            onRowContextMenu: function(e, rowIndex, rowData){
+                allToRole_roleId=rowData.roleId;
+                e.preventDefault(); //阻止默认事件
+                $('#onRowContextMenuWindow').menu('show', { // 显示右键菜单
+                    left: e.pageX,
+                    top: e.pageY
+                });
+            }
+        });
+    }
+
+
+    //用户分页
+    function userPagingClick(param) {
+        var divId = $('#divIdTree').val();
+        var strArr = pagingFun(param,user_totalRecord,all_pageSize,user_currentPage,user_pageStart).split(",");
+        user_currentPage=strArr[0];
+        user_pageStart=strArr[1];
+        if (param=='refresh') {
+            getUser(divId, '66');
+        }
+        getUser(divId,'66');
+    }
+
+    //角色分页
+    function rolePagingClick(param) {
+        var strArr = pagingFun(param,role_totalRecord,all_pageSize,role_currentPage,role_pageStart).split(",");
+        role_currentPage=strArr[0];
+        role_pageStart=strArr[1];
+        if (param=='refresh') {
+            getRole(null);
+        }
+        getRole(null);
+    }
+
+    //权限分页
+    function authPagingClick(param) {
+        var strArr = pagingFun(param,auth_totalRecord,all_pageSize,auth_currentPage,auth_pageStart).split(",");
+        auth_currentPage=strArr[0];
+        auth_pageStart=strArr[1];
+        if (param=='refresh') {
+            getAuthotity(null);
+        }
+        getAuthotity(null);
+    }
+
+    //已有用户分页
+    function exitUserPagingClick(param){
+        var strArr = pagingFun(param,exitUser_totalRecord,all_pageSize,exitUser_currentPage,exitUser_pageStart).split(",");
+        exitUser_currentPage=strArr[0];
+        exitUser_pageStart=strArr[1];
+
+        $('#exitUserN').html(exitUser_currentPage);
+        $('#exitUserTotal').html(Math.ceil(exitUser_totalRecord/all_pageSize));
+
+        if (param=='refresh') {
+            getSelectUser(allToRole_roleId,exitUser_pageStart,'exitUser');
+            return;
+        }
+        getSelectUser(allToRole_roleId,exitUser_pageStart,'exitUser');
+    }
+
+    //可选用户分页
+    function optionalUserPagingClick(param){
+        var strArr = pagingFun(param,optionalUser_totalRecord,all_pageSize,optionalUser_currentPage,optionalUser_pageStart).split(",");
+        optionalUser_currentPage=strArr[0];
+        optionalUser_pageStart=strArr[1];
+
+        $('#optionalUserN').html(optionalUser_currentPage);
+        $('#optionalUserTotal').html(Math.ceil(optionalUser_totalRecord/all_pageSize));
+
+        if (param=='refresh') {
+            getSelectUser(allToRole_roleId,optionalUser_pageStart,'optionalUser');
+            return;
+        }
+        getSelectUser(allToRole_roleId,optionalUser_pageStart,'optionalUser');
+    }
+
+    function exitAuthPagingClick(param){
+        var strArr = pagingFun(param,exitAuth_totalRecord,all_pageSize,exitAuth_currentPage,exitAuth_pageStart).split(",");
+        exitAuth_currentPage=strArr[0];
+        exitAuth_pageStart=strArr[1];
+
+        $('#AuthUserN').html(exitAuth_currentPage);
+        $('#exitAuthTotal').html(Math.ceil(exitAuth_totalRecord/all_pageSize));
+
+        if (param=='refresh') {
+            getSelectAuthority(allToRole_roleId,exitAuth_pageStart,'exitAuth');
+            return;
+        }
+        getSelectAuthority(allToRole_roleId,exitAuth_pageStart,'exitAuth');
+    }
+
+    function optionalAuthPagingClick(param){
+        var strArr = pagingFun(param,optionalAuth_totalRecord,all_pageSize,optionalAuth_currentPage,optionalAuth_pageStart).split(",");
+        optionalAuth_currentPage=strArr[0];
+        optionalAuth_pageStart=strArr[1];
+        //alert(optionalAuth_currentPage+'/'+optionalAuth_pageStart);
+
+        $('#optionalAuthN').html(optionalAuth_currentPage);
+        $('#optionalAuthTotal').html(Math.ceil(optionalAuth_totalRecord/all_pageSize));
+        if (param=='refresh') {
+            getSelectAuthority(allToRole_roleId,optionalAuth_pageStart,'optionalAuth');
+            return;
+        }
+        getSelectAuthority(allToRole_roleId,optionalAuth_pageStart,'optionalAuth');
+    }
+
+    //分页共用方法封装
+    function pagingFun(param,totalRecord,pageSize,currentPage,pageStart) {
+        var totalPage=(totalRecord%pageSize==0?totalRecord/all_pageSize:Math.ceil(totalRecord/pageSize));
+
+        if (param=='firstPage') {
+            currentPage = 1;
+            pageStart = 0;
+
+        }else if (param=='prePage') {
+            currentPage = currentPage - 1 > 1 ? currentPage - 1 : 1;
+            pageStart=pageStart-pageSize>0?pageStart-pageSize:0;
+
+        }else if (param=='nextPage') {
+            currentPage = parseInt(currentPage)+ 1> totalPage ? totalPage : parseInt(currentPage) + 1;
+            pageStart=parseInt(pageStart)+parseInt(pageSize)>(totalPage-1)*pageSize?(totalPage-1)*pageSize:parseInt(pageStart)+parseInt(all_pageSize);
+
+        }else if (param=='endPage') {
+            currentPage = totalPage;
+            pageStart=(totalPage-1)*pageSize;
+        }
+        // alert('总页：'+totalPage+'当前页：'+currentPage+'开始页'+pageStart);
+        return currentPage+','+pageStart;
+    }
+
+
+
+</script>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhangnx.system.dao.MenuDao">
+
+    <resultMap id="BaseResultMap" type="com.zhangnx.system.pojo.Menus" >
+        <id column="menuId" property="menuId"  />
+        <result column="menuName" property="menuName"  />
+        <result column="parentId" property="parentId"  />
+        <result column="parentName" property="parentName" />
+        <result column="sort" property="sort" />
+        <result column="iconCls" property="iconCls"  />
+        <result column="url" property="url"  />
+        <result column="enable" property="enable"  />
+    </resultMap>
+
+
+    <!--查询左侧导航菜单-->
+    <select id="getMenuListByUserId"  resultMap="BaseResultMap">
+       select distinct(m.menuId),
+				m.menuName,
+				m.parentId,
+				m.iconCls,
+				m.enable,
+				m.url,
+				m.sort
+        from sys_menu m,sys_role_menu rm,sys_user_role ur
+        where m.menuId=rm.menuId
+        and rm.roleId=ur.roleId
+        and ur.userId=#{0}
+        ORDER BY m.sort
+    </select>
+
+    <select id="getMenuListByMenuIds"  resultMap="BaseResultMap">
+       select m.menuId,
+				m.menuName,
+				m.parentId,
+				m.iconCls,
+				m.enable,
+				m.url,
+				m.sort
+        from sys_menu m where m.menuId in
+        <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        ORDER BY m.sort
+    </select>
+
+    <select id="getExistByRoleIdMenuId"  resultType="int">
+           select count(*) from sys_role_menu where menuId=#{0} and roleId=#{1}
+    </select>
+
+    <!--查询所有菜单-->
+    <select id="getAllMenuList"  resultMap="BaseResultMap">
+         SELECT m.menuId,
+                 m.menuName,
+                 m.parentId,
+                 m.enable,
+                 m.url,
+                 m.iconCls,
+                 m.sort
+        from sys_menu m order by m.menuId
+    </select>
+
+    <select id="getExistMenuByRoleId"  resultMap="BaseResultMap">
+         SELECT  DISTINCT (m.menuId),
+				m.menuName,
+                m.url,
+                m.parentId,
+                m.iconCls,
+                m.enable
+	    from sys_menu m,sys_role_menu rm
+        where m.menuId=rm.menuId
+		and rm.roleId=#{0}
+        ORDER BY m.sort
+    </select>
+
+    <select id="getOptionalMenuByRoleId" parameterType="java.lang.Integer"  resultMap="BaseResultMap">
+        select DISTINCT (menuId),
+                menuName,
+                url,
+                parentId,
+                iconCls,
+                enable
+        from sys_menu
+        where  menuId not in(select rm.menuId from sys_role_menu rm where  rm.roleId=#{roleId})
+	    ORDER BY sort
+    </select>
+
+    <select id="getParentId"  resultType="java.lang.Integer">
+        SELECT m.parentId from sys_menu m where m.menuId=#{0}
+    </select>
+
+    <select id="haveParent"  resultType="java.lang.Integer">
+        SELECT count(1) from sys_menu m where m.parentId!=0 and m.menuId=#{0}
+    </select>
+
+    <select id="getChildMenuByParentId"  resultType="java.lang.Integer">
+          SELECT m.menuId from sys_menu m where m.parentId=#{0}
+    </select>
+
+    <!--新增菜单，返回菜单ID-->
+    <insert id="addMenu" parameterType="com.zhangnx.system.pojo.Menus"  useGeneratedKeys="true" keyProperty="meauId">
+        insert into sys_menu(menuName,
+                              url,
+                              parentId,
+                              iconCls,
+                              enable,
+                              sort)
+                    values(#{menuName},
+                            #{url},
+                            #{parentId},
+                            #{iconCls},
+                            #{enable},
+                            #{sort})
+    </insert>
+
+    <!--修改菜单-->
+    <update id="editMenu" parameterType="com.zhangnx.system.pojo.Menus" >
+        update sys_menu set
+                menuName=#{menuName},
+                url=#{url},
+                parentId=#{parentId},
+                iconCls=#{iconCls},
+                enable=#{enable},
+                sort=#{sort}
+        where menuId=#{menuId}
+    </update>
+
+    <!--删除菜单-->
+    <delete id="delMenu" parameterType="Integer" >
+        delete from sys_menu where menuId=#{menuId}
+    </delete>
+
+
+
+</mapper>

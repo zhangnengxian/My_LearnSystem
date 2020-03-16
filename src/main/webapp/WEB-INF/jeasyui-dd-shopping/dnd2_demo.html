@@ -1,0 +1,58 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<title>jQuery EasyUI Demo</title>
+	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.net/Public/js/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.net/Public/js/easyui/themes/icon.css">
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
+	<script type="text/javascript" src="http://www.jeasyui.net/Public/js/easyui/jquery.easyui.min.js"></script>
+	<style type="text/css">
+
+
+	</style>
+
+</head>
+<body style="margin:0;padding:0;height:100%;background:#fafafa;">
+
+
+	<table>
+		<tr>
+			<td>111111</td>
+		</tr>
+	</table>
+
+
+	<div class="cart" style="width: 300px;height: 500px;position: fixed;margin-right: 0px">
+		<table id="cartcontent" fitColumns="true" style="width:300px;height:auto;">
+			<thead>
+				<tr>
+					<th field="name" width=140>Name</th>
+					<th field="quantity" width=60 align="right">Quantity</th>
+					<th field="price" width=60 align="right">Price</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+</body>
+</html>
+
+<script>
+    $(function(){
+        $('tr').draggable({
+            revert:true,
+            proxy:'clone',
+            onStartDrag:function(){
+                $(this).draggable('options').cursor = 'not-allowed';
+                $(this).draggable('proxy').css('z-index',10);
+            },
+        });
+        $('.cart').droppable({
+            onDrop:function(e,source){
+                var name = $(source).find('p:eq(0)').html();
+                alert(name);
+            }
+        });
+    });
+
+</script>

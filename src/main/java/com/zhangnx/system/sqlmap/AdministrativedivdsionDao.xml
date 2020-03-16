@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhangnx.system.dao.AdministrativedivdsionDao">
+
+    <resultMap id="BaseResultMap" type="com.zhangnx.system.pojo.Administrativedivision" >
+        <id column="id" property="id"  />
+        <result column="areaCode" property="areaCode" />
+        <result column="areaName" property="areaName" />
+        <result column="areaAddr" property="areaAddr"/>
+        <result column="parentId" property="parentId" />
+        <result column="parentName" property="parentName" />
+        <result column="sort" property="sort" />
+    </resultMap>
+
+    <!--查询行政区划-->
+    <select id="getAllAdministrativedivisionList" resultType="com.zhangnx.system.pojo.Administrativedivision">
+        select a.* from administrativedivision a
+    </select>
+
+
+    <!--查询行政区划-->
+    <select id="getChildAdministrativedivisionByParentId" parameterType="Integer" resultType="java.lang.Integer">
+         select a.id from administrativedivision a where a.parentId=#{admId}
+    </select>
+
+</mapper>

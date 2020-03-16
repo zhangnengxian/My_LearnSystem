@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>综合学习系统</title>
+    <link rel="stylesheet" type="text/css" href="../../easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../../easyui/themes/icon.css">
+    <script type="text/javascript" src="../../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../../easyui/jquery.easyui.min.js"></script>
+</head>
+<style>
+    fieldset{margin:5px;padding:8px;border:1px solid silver}
+    legend{border:0;width:auto;margin: 0;margin-left:30px;font-size: 15px;color: #999;}
+    .easyui-linkbutton,.textbox,.combo{border-radius:0;}
+    .layoutDiv{height: 500px;}
+</style>
+
+<body>
+<div class="layoutDiv" style="width:58%;float: left;">
+    <form>
+        <fieldset>
+            <legend>查询条件</legend>
+          &nbsp;菜单名称搜索：<input class="easyui-textbox" iconCls="icon-search" style="width: 70%">
+        </fieldset>
+    </form>
+   <table id="tableId" class="easyui-datagrid" fit="true" title="结果显示" iconCls="icon-save"
+          toolbar="#toolbar" rownumbers="true" pagination="true">
+        <thead>
+        <tr>
+            <th field="menuId" width="10%" align="center">菜单ID</th>
+            <th field="menuName" width="20%" align="center">菜单名称</th>
+            <th field="parentName" width="20%" align="center">父级菜单</th>
+            <th field="url" width="40%" align="center">地址</th>
+            <th field="enable" width="15%" align="center">是否启用</th>
+        </tr>
+        </thead>
+    </table>
+    <div id="toolbar">
+        <a  class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:alert('Add')">新增</a>
+        <a  class="easyui-linkbutton" iconCls="icon-cut" plain="true" onclick="javascript:alert('Cut')">删除</a>
+        <a  class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:alert('Save')">修改</a>
+    </div>
+    <div>dddd</div>
+</div>
+<div class="layoutDiv" style="width: 41%;float: right;border-left: 1px solid black">
+
+
+    ddd</div>
+</body>
+</html>
+<script>
+    $(function () {
+        $(".layoutDiv").height($(window).height()-80);
+        getmenuList();
+
+    });
+
+    function getmenuList() {
+        $.ajax({
+            url:"/menuController/getMenuList",
+            data:{},
+            async: true,
+            dataType : "json",
+            success: function (data) {
+                $('#tableId').datagrid('loadData',data);
+            }
+        });
+    }
+
+
+
+
+</script>

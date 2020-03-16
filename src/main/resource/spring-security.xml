@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/security
+    http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http>
+        <!--定义不拦截的请求-->
+        <security:intercept-url pattern="/images/**" access="permitAll"/>
+        <security:intercept-url pattern="/angilarJS/**" access="permitAll"/>
+        <security:intercept-url pattern="/bootstrap/**" access="permitAll"/>
+        <security:intercept-url pattern="/css/**" access="permitAll"/>
+        <security:intercept-url pattern="/easyui/**" access="permitAll"/>
+        <security:intercept-url pattern="/echarts/**" access="permitAll"/>
+        <security:intercept-url pattern="/js/**" access="permitAll"/>
+        <security:intercept-url pattern="/layui/**" access="permitAll"/>
+        <security:intercept-url pattern="/vueJS/**" access="permitAll"/>
+        <!--如果不放行去往登录页面的路径，会出现重定向次数过多-->
+        <security:intercept-url pattern="/userController/loginPage" access="permitAll"/>
+        <security:intercept-url pattern="/userController/verificationCode" access="permitAll"/>
+        <security:intercept-url pattern="/userController/saveUser" access="permitAll"/>
+
+        <!--需要有指定的权限才能访问的URL-->
+        <security:intercept-url pattern="/EchartsMenuController/barGraph" access="hasAuthority('barGraph')"/>
+        <security:intercept-url pattern="/menuController/addMenus" access="hasAuthority('addMenu')"/>
+        <security:intercept-url pattern="/menuController/delMenus" access="hasAuthority('delMenu')"/>
+        <security:intercept-url pattern="/menuController/editMenus" access="hasAuthority('editMenu')"/>
+
+        <security:intercept-url pattern="/authController/addAuthority" access="hasAuthority('addAuthority')"/>
+        <security:intercept-url pattern="/authController/delAuthority" access="hasAuthority('delAuthority')"/>
+        <security:intercept-url pattern="/authController/editAuthority" access="hasAuthority('editAuthority')"/>
+
+        <security:intercept-url pattern="/roleController/saveRole" access="hasAuthority('addRole')"/>
+        <security:intercept-url pattern="/roleController/delRole" access="hasAuthority('delRole')"/>
+        <security:intercept-url pattern="/roleController/updateRole" access="hasAuthority('editRole')"/>
+
+        <!--<security:intercept-url pattern="/userController/saveUser" access="hasAuthority('addUser')"/>-->
+        <security:intercept-url pattern="/userController/delUser" access="hasAuthority('delUser')"/>
+        <security:intercept-url pattern="/userController/updateUser" access="hasAuthority('editUser')"/>
+
+        <security:intercept-url pattern="/roleController/addUserToRole" access="hasAuthority('addUserToRole')"/>
+        <security:intercept-url pattern="/roleController/delUserToRole" access="hasAuthority('delUserToRole')"/>
+
+        <security:intercept-url pattern="/roleController/addMenuToRole" access="hasAuthority('addMenuToRole')"/>
+        <security:intercept-url pattern="/roleController/delMenuToRole" access="hasAuthority('delMenuToRole')"/>
+
+        <security:intercept-url pattern="/roleController/addAuthorityToRole" access="hasAuthority('addAuthorityToRole')"/>
+        <security:intercept-url pattern="/roleController/removeaAuthorityToRole" access="hasAuthority('removeaAuthorityToRole')"/>
+
+
+        <!--所有的请求都需要登录验证-->
+        <security:intercept-url pattern="/**" access="isFullyAuthenticated()"/>
+        <!--指定自己的过滤器-->
+        <security:custom-filter ref="loginSecurityFilter" before="FORM_LOGIN_FILTER"/>
+
+        <!--1.login-page="/userController/loginPage"去往登录页面
+            2.login-processing-url="/login_check" 更改security的默认提交表单请求，默认为login
+            3.default-target-url="/userController/toIndex"成功后处理，定义成功处理后就不起作用了
+            4.authentication-success-handler-ref="myAuthenticationSuccessHanfler"成功处理类
+            5.authentication-failure-handler-ref="myAuthenticationFailHanfler"失败处理类
+        -->
+        <security:form-login login-page="/userController/loginPage"
+                             login-processing-url="/login_check"
+                             default-target-url="/userController/toIndex"
+                             authentication-success-handler-ref="myAuthenticationSuccessHanfler"
+                             authentication-failure-handler-ref="myAuthenticationFailHanfler"/>
+
+        <!--跨域请求报403-->
+        <security:csrf disabled="true"/>
+        <!--没权限时跳转到的地址-->
+       <security:access-denied-handler  ref="unAuthorityHandler"/>
+        <security:headers>
+            <!--<security:frame-options policy="SAMEORIGIN"/>-->
+            <!-- Iframe页面允许被其它页面嵌入 -->
+            <security:frame-options disabled="true"/>
+        </security:headers>
+        <!--记住密码-->
+     <!-- <security:remember-me token-repository-ref="jdbcTokenRepository" token-validity-seconds="3600"/>-->
+
+        <!--session过期处理-->
+        <security:session-management invalid-session-url="/userController/loginPage"  session-fixation-protection="newSession" >
+            <security:concurrency-control max-sessions="1"  error-if-maximum-exceeded="false" /> <!--error-if-maximum-exceeded="false"时当前用户登录时，之前登录的用户Session过期-->
+        </security:session-management>
+
+        <!--退出登录-->
+        <security:logout logout-url="/logout" logout-success-url="/userController/loginPage" invalidate-session="true"/>
+
+    </security:http>
+
+
+
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="myUserDetailService">
+            <security:password-encoder ref="passwordEncoder"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <!--自定义过滤器-->
+    <bean id="loginSecurityFilter" class="security.LoginSecurityFilter">
+        <property name="authenticationFailureHandler" ref="myAuthenticationFailHanfler"/>
+    </bean>
+    <!--用户信息校验及权限获取-->
+    <bean id="myUserDetailService" class="security.MyUserDetailService"/>
+    <!--密码加密-->
+    <bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder"/>
+    <!--校验成功后处理-->
+    <bean id="myAuthenticationSuccessHanfler" class="security.MyAuthenticationSuccessHanfler"/>
+    <!--校验失败后处理-->
+    <bean id="myAuthenticationFailHanfler" class="security.MyAuthenticationFiailHanfler"/>
+
+    <bean id="unAuthorityHandler" class="security.MyunAuthorityHandler"/>
+
+    <!--记住密码-->
+<!--    <bean id="jdbcTokenRepository" class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+               <property name="dataSource" ref="dataSource"/>
+               <property name="createTableOnStartup" value="true"/>
+        </bean>-->
+
+
+
+
+
+
+
+
+</beans>

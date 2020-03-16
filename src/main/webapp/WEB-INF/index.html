@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head >
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>综合学习系统</title>
+    <link rel="shortcut icon" href="../images/head_title.png"/>
+    <link rel="stylesheet" type="text/css" href="../easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../easyui/themes/icon.css" />
+    <script type="text/javascript" src="../easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../easyui/jquery.easyui.min.js"></script>
+
+    <style type="text/css">
+        iframe{background:#e1e1e8}
+        .tree-nodes{height: 30px}
+        .tree-nodes-selected{background-color:#12181B;color: white;font-weight: bold;}
+        .tree-nodes-hover{background: #12181B;color: white}
+        .tree-hit.tree-collapsed{float: right;margin-right: 20px;background: url("../images/menu_level.png");
+            background-repeat: no-repeat;background-position:center center}
+        .tree-hit.tree-expanded{float: right;margin-right: 20px;background: url("../images/menu_vertical.png");
+            background-repeat: no-repeat;background-position:center center}
+        .tabs{background:#E1E1E8;}
+        .tabs-header{background:#E1E1E8;border: 0}
+        .panel-header{background: #1C2229;height: 52px;border:0;border-bottom: 1px solid white;}
+        .panel-title{color: white;font-size: 18px; line-height: 58px;text-align: center}
+        .panel.layout-expand.layout-expand-west.panel-htop{background: #1C2229;border: 0}
+        div[class="panel-body"]{border: 0}
+        .panel.layout-expand.layout-expand-west.panel-htop.layout-expand-over:hover{background: #1C2229}
+    </style>
+
+</head>
+<body class="easyui-layout">
+<!--左侧导航菜单-->
+<div data-options="region:'west',title:'综合学习系统',split:false" style="width:16%;background: #1C2229;color: white;border: 0">
+    <ul id="mainMenu" style="color:#ABB1B7;"></ul>
+</div>
+
+<!--右-->
+<div data-options="region:'center',split:false" style="width:100%;border: 0;overflow:hidden;">
+    <div style="height: 10%;background: url('../images/title.png');background-size:cover;overflow:hidden">
+        <div style="text-align: right;margin: 35px 20px">
+            系统时间：<span style="color: white" id="currentTime"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+            当前用户：<span style="color: white" id="userName"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a style="text-decoration: none;color:white;font-weight: bold" href="/logout">退出</a>
+        </div>
+    </div>
+    <div id="tabs" class="easyui-tabs"style="height:100%;">
+    </div>
+</div>
+
+<!--右键关闭tabs小窗口-->
+<div id="mm" class="easyui-menu" style="width:200px;background: #fafff1;display: none">
+    <div id="tabupdate">刷新</div>
+    <div class="menu-sep"></div>
+    <div id="close">关闭</div>
+    <div id="closeall">全部关闭</div>
+    <div id="closeother">除此之外全部关闭</div>
+    <div class="menu-sep"></div>
+    <div id="closeright">当前页右侧全部关闭</div>
+    <div id="closeleft">当前页左侧全部关闭</div>
+    <div class="menu-sep"></div>
+    <div id="exit">退出</div>
+</div>
+
+</body>
+</html>
+<script>
+
+    $(function () {
+        getMenus();//左侧导航获取菜单
+        initHomePage();//首页面初始化
+        tabClose();//关闭tabs
+        tabCloseEven();//给tabs添加右击事件、双击事件
+        getSystemCurrentTime();
+        getUserInfo();//获取用户信息
+    });
+
+    function getSystemCurrentTime() {
+        setInterval(function() {
+            var date = new Date();   // 程序计时的月从0开始取值后+1
+            var dateTime=date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日 '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+          $('#currentTime').html(dateTime);
+        }, 1000);
+    }
+
+
+    //首页面初始化
+    function  initHomePage() {
+        var content = '<iframe frameborder="0" src="/EchartsMenuController/ringDiagram" style="width:100%;height:99%;"></iframe>';
+        $('#tabs').tabs('add',{
+            title:'首页',
+            content:content,
+            iconCls:'icon-bullet_home'
+        });
+    }
+
+    //获取左侧导航菜单
+    function getMenus() {
+        $("#mainMenu").tree({
+            url :'/menuController/getMenuListByUserId',
+            animate:true,
+            //lines:true,
+            parentField : 'pid',
+            //选择节点时触发
+            onClick : function(nodes) {
+                var url = nodes.attributes.url;
+                var title = nodes.text;
+                if (url!=null && url!='') {
+                    if ($('#tabs').tabs('exists', title)){
+                        $('#tabs').tabs('select', title);
+                    } else {
+                        var tabsConut = $('#tabs').tabs('tabs').length;
+                        if(tabsConut>7){
+                            alert("你打开的窗口已超过7个，窗口打开数量限制为7，请关闭一些后再次打开此窗口，在选项卡上单击鼠标右键选择关闭选项");
+                        }else{
+                            var content = '<iframe scrolling="auto" frameborder="0"  src="'+url+'" style="width:100%;height:99%;"></iframe>';
+                            $('#tabs').tabs('add',{
+                                title:title,
+                                content:content,
+                                closable:true,
+                                iconCls:nodes.iconCls
+                            });
+                        }
+                        $('#mm-tabupdate').click();
+                    }
+                    tabClose();
+                }
+            },
+            onSelect:function(nodes){
+                var url=nodes.attributes.url;
+                if(url==null || url==""){
+                    $(this).tree('collapseAll');
+                    //$('#mainMenu').tree(nodes.state === 'closed' ? 'expand' : 'collapse', nodes.target);
+                    // $(this).tree('toggle', nodes.target);
+                    if(nodes.state=='open'){
+                        $(this).tree('collapse', nodes.target);
+                    }else{
+                        $(this).tree('expand', nodes.target);
+                    }
+                }
+            },
+
+            //数据加载成功后触发
+            onLoadSuccess: function (nodes) {
+                var roots =$('#mainMenu').tree('getRoots');
+                for (var i=0;i<roots.length;i++){
+                    if(i==1){
+                        $('#mainMenu').tree('expand',roots[i].target);
+                    }else {
+                        $('#mainMenu').tree('collapse',roots[i].target);
+                    }
+                }
+            }
+        });
+    }
+    function getUserInfo() {
+        $.ajax({
+            type: 'POST',
+            url: '/menuController/getUserInfo',
+            data:{},
+            async: true,
+            success: function (data) {
+                $("#userName").html(data);
+            }
+        });
+    }
+
+    //绑定右键菜单事件
+    function tabCloseEven() {
+        $('#mm').menu({
+
+            onClick: function (item) {
+                closeTab(item.id);
+            }
+        });
+        return false;
+    }
+    function closeTab(action) {
+        var onlyOpenTitle="首页";//不允许关闭的标签的标题
+        var alltabs = $('#tabs').tabs('tabs');
+        var currentTab =$('#tabs').tabs('getSelected');
+        var allTabtitle = [];
+        $.each(alltabs,function(i,n){
+            allTabtitle.push($(n).panel('options').title);
+        });
+
+        switch (action) {
+            case "refresh":
+                var iframe = $(currentTab.panel('options').content);
+                var src = iframe.attr('src');
+                $('#tabs').tabs('update', {
+                    tab: currentTab,
+                    options: {
+                        content: createFrame(src)
+                    }
+                });
+                break;
+            case "close":
+                var currtab_title = currentTab.panel('options').title;
+                if (currtab_title!= onlyOpenTitle) {
+                    $('#tabs').tabs('close', currtab_title);
+                }
+
+                break;
+            case "closeall":
+                $.each(allTabtitle, function (i, n) {
+                    if (n != onlyOpenTitle){
+                        $('#tabs').tabs('close', n);
+                    }
+                });
+                break;
+            case "closeother":
+                var currtab_title = currentTab.panel('options').title;
+                $.each(allTabtitle, function (i, n) {
+                    if (n != currtab_title && n != onlyOpenTitle)
+                    {
+                        $('#tabs').tabs('close', n);
+                    }
+                });
+                break;
+            case "closeright":
+                var tabIndex = $('#tabs').tabs('getTabIndex', currentTab);
+
+                if (tabIndex == alltabs.length - 1){
+                    alert('不好意思，后边没有啦!');
+                    return false;
+                }
+                $.each(allTabtitle, function (i, n) {
+                    if (i > tabIndex) {
+                        if (n != onlyOpenTitle){
+                            $('#tabs').tabs('close', n);
+                        }
+                    }
+                });
+                break;
+            case "closeleft":
+                var tabIndex = $('#tabs').tabs('getTabIndex', currentTab);
+                if (tabIndex == 1) {
+                    alert('只有一个页面了，留着吧!');
+                    return false;
+                }
+                $.each(allTabtitle, function (i, n) {
+                    if (i < tabIndex) {
+                        if (n != onlyOpenTitle){
+                            $('#tabs').tabs('close', n);
+                        }
+                    }
+                });
+                break;
+            case "exit":
+                $('#closeMenu').menu('hide');
+                break;
+        }
+    }
+    function tabClose() {
+        /*双击关闭TAB选项卡*/
+        $(".tabs-inner").dblclick(function(){
+            var subtitle = $(this).children(".tabs-closable").text();
+            $('#tabs').tabs('close',subtitle);
+        })
+        /*为选项卡绑定右键*/
+        $(".tabs-inner").bind('contextmenu',function(e){
+            $('#mm').menu('show', {
+                left: e.pageX,
+                top: e.pageY
+            });
+
+            var subtitle =$(this).children(".tabs-closable").text();
+
+            $('#mm').data("currtab",subtitle);
+            $('#tabs').tabs('select',subtitle);
+            return false;
+        });
+    }
+
+</script>

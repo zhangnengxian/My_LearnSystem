@@ -1,0 +1,51 @@
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>综合学习系统</title>
+	<link rel="shortcut icon" href="../../images/head_title.png"/>
+	<script src="../../js/jquery.min.js"></script>
+	<style>
+		*{padding: 0px;margin: 0px}
+	</style>
+</head>
+<body style="background:black">
+
+</body>
+</html>
+
+<script>
+	var minSize=5;
+	var maxSize=50;
+	var newOn=500;
+	var flakeColor='#fff';
+	var flake=$('<div></div>').css({'position':'absolute','top':'-150px'}).html('<img src="../../images/head_120.png" width="60px">')
+
+	$(function () {
+		var documentHiegth=$(document).height();
+        var documentWidth=$(document).width();
+
+        setInterval(function () {
+			var startPostionLeft=Math.random()*documentWidth;
+			var startOpacity=0.7+Math.random()*0.3;
+			var endPositionTop=documentHiegth;
+			var endPositionLeft=Math.random()*documentWidth;
+			var durationFall=4000+Math.random()*3000;
+			var sizeFlake=minSize+Math.random()*maxSize;
+			flake.clone().appendTo('body').css({
+				'left':startPostionLeft,
+				'opacity':startOpacity,
+				'font-size':sizeFlake,
+				'color':flakeColor
+			}).animate({
+			    'top':endPositionTop,
+				'left':endPositionLeft,
+				'opcity':0.5
+            },durationFall,function () {
+				$(this).remove()
+            });
+        },newOn);
+
+    });
+	
+</script>

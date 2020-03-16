@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhangnx.system.dao.RoleDao">
+
+    <resultMap id="BaseResultMap" type="com.zhangnx.system.pojo.Roles" >
+        <id column="roleId" property="roleId"  />
+        <result column="roleName" property="roleName"  />
+    </resultMap>
+
+    <select id="getRoletotalCount"  resultType="int">
+        select count(*) from sys_role
+    </select>
+
+    <select id="getRoleList"  resultMap="BaseResultMap">
+       select a.* from sys_role a where 1=1
+        <choose>
+            <when test="roleName != null">
+                and a.roleName like CONCAT(CONCAT('%',#{roleName},'%'))
+            </when>
+            <otherwise>
+                limit ${pageStart},${pageSize}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--删除角色-->
+    <delete id="delRole" parameterType="int" >
+        delete from sys_role where roleId=#{roleId}
+    </delete>
+
+
+
+    <!--新增角色，返回角色ID-->
+    <insert id="addRole" parameterType="com.zhangnx.system.pojo.Roles"  useGeneratedKeys="true" keyProperty="roleId">
+        insert into sys_role(roleName) values(#{roleName})
+        </insert>
+
+    <!--修改角色-->
+    <update id="updateRole" parameterType="com.zhangnx.system.pojo.Roles" >
+        update sys_role set
+                    roleName=#{roleName}
+         where roleId=#{roleId}
+    </update>
+
+
+    <select id="selectedRoleListByUserId" parameterType="Integer" resultMap="BaseResultMap">
+        select distinct(r.roleId),r.roleName from sys_role r,sys_user_role ur
+                where r.roleId=ur.roleId and ur.userId=#{userId}
+                order by r.roleId
+    </select>
+
+    <select id="optionalRoleListByUserId" parameterType="Integer" resultMap="BaseResultMap">
+              select distinct(a.roleId), a.roleName from sys_role a
+              where a.roleId not in(select r.roleId  from sys_role r,sys_user_role ur
+                                      where r.roleId=ur.roleId and ur.userId=#{userId})
+              order by a.roleId
+    </select>
+
+
+    <select id="getRoleByName" parameterType="String" resultMap="BaseResultMap">
+       select r.roleId, r.roleName from sys_role r where r.roleId=#{roleName}
+    </select>
+
+
+
+
+    <!--用户分配角色添加-->
+    <insert id="addUserToRole">
+       insert into sys_user_role (userId,roleId) values(#{0},#{1})
+    </insert>
+
+    <!--用户分配角色删除-->
+    <delete id="delUserToRole">
+          delete from sys_user_role where userId=#{0} and roleId=#{1}
+    </delete>
+
+
+    <!--菜单分配添加-->
+    <insert id="addMenuToRole">
+          insert into sys_role_menu (menuId,roleId) values(#{0},#{1});
+    </insert>
+
+    <!--菜单分配删除-->
+    <delete id="delMenuToRole">
+          delete from sys_role_menu where menuId=#{0} and roleId=#{1}
+    </delete>
+
+
+
+
+
+
+
+
+
+
+</mapper>

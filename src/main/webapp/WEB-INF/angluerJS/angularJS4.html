@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="../../angilarJS/angular.min.js"></script>
+</head>
+<style>
+    input.ng-invalid {
+        background-color: lightblue;
+    }
+</style>
+
+<body ng-app="myApp">
+    <div ng-controller="myCtrl">
+        <input ng-model="name">
+        <h1>{{greeting}}</h1>
+        <button ng-click='sayHello()'>点我</button>
+    </div>
+</body>
+
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('myCtrl', function($scope) {
+        $scope.name = "Runoob";
+        $scope.sayHello = function() {
+            $scope.greeting = 'Hello ' + $scope.name + '!';
+        };
+    });
+</script>

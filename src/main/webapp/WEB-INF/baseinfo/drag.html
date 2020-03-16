@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../../easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../easyui/jquery.easyui.min.js"></script>
+</head>
+<body>
+<div id="droppable" class="easyui-droppable" data-options="id:'#source_grid'">
+    <table class="easyui-datagrid">
+        <thead>
+        <th data-options="field:'id'">id</th>
+        <th data-options="field:'name'">name</th>
+        </thead>
+    </table>
+
+</div>
+</body>
+</html>
+
+<script>
+    $('#source_grid').datagrid({
+        onStopDrag:function(index, row){
+            if(ifInDroppable){
+                $('#target_grid').datagrid('appendRow',row);
+            }
+        },
+    })
+
+
+    //监听拖拽进入和拖拽离开事件
+    $('#droppable').datagrid({
+        onDragEnter:function(e,source){
+            ifInDroppable = true;
+        },
+        onDragLeave:function(e,source){
+            ifInDroppable = false;
+        },
+    })
+</script>

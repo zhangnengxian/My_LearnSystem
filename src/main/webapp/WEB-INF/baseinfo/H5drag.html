@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style type="text/css">
+    </style>
+
+</head>
+<body>
+<div >
+    <table id="box" style="width: 300px;height:300px;" border="1">
+        <tr ><td >11111</td></tr>
+    </table>
+</div>
+
+<table border="1">
+<tr draggable="true" id="img">
+    <td>22222</td>
+</tr>
+</table>
+</body>
+</html>
+
+<script type="text/javascript">
+    window.onload=function(){
+        function start(ev){
+            ev.dataTransfer.setData("Text",ev.target.id);//设置数据类型为（“Text”）和ID
+        }
+        function stop(ev){
+            ev.preventDefault();//阻止元素发生默认行为
+            var id=ev.dataTransfer.getData("Text");//获取数据类型对应的ID
+            ev.target.appendChild(document.getElementById(id));
+        }
+        function over(ev){
+            ev.preventDefault();
+        }
+        var oBox=document.getElementById('box');
+        var oImg=document.getElementById('img');
+        oImg.ondragstart=function(ev){//要拖动的元素触发本函数
+            start(ev);
+        };
+        oBox.ondragover=function(ev){//拖动过程中触发本函数
+            over(ev);
+        };
+        oBox.ondrop=function(ev){//拖动结束时触发本函数
+            stop(ev);
+            alert($(this).val());
+        };
+    };
+</script>

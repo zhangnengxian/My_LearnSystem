@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhangnx.system.dao.AuthorityDao">
+
+    <resultMap id="BaseResultMap" type="com.zhangnx.system.pojo.Authority" >
+        <id column="authId" property="authId" />
+        <result column="authName" property="authName" />
+        <result column="authCode" property="authCode" />
+    </resultMap>
+
+    <!--查询用户具有的权限-->
+    <select id="getAuthorityListByUserName" parameterType="Integer"  resultType="String">
+       select distinct(auth.authCode)
+        from sys_authority auth,sys_role_authority rauth,sys_user_role ur
+        where auth.authId=rauth.authId and rauth.roleId=ur.roleId and ur.userId=#{userId}
+        order by auth.authId
+    </select>
+
+    <select id="getAuthtotalCount" resultType="int">
+          select count(*) from sys_authority
+    </select>
+
+    <select id="getAuthByName"   resultMap="BaseResultMap">
+        select a.* from sys_authority a
+        where  a.authName like CONCAT(CONCAT('%',#{authName},'%'))
+            or a.authCode like CONCAT(CONCAT('%',#{authName},'%'))
+            order by a.authId limit ${pageStart},${pageSize}
+    </select>
+
+
+    <select id="getAuthorityByName" parameterType="String" resultType="int">
+          select count(*) from sys_authority where authName=#{authName}
+    </select>
+
+    <select id="getCountExitAuth" parameterType="Integer" resultType="int">
+        select count(1) from sys_authority auth,sys_role_authority ra
+        where auth.authId=ra.authId and ra.roleId=#{roleId}
+    </select>
+
+    <select id="getexitAuthByRoleId" parameterType="Integer" resultMap="BaseResultMap">
+        select distinct(auth.authId),auth.authName,auth.authCode
+        from sys_authority auth,sys_role_authority ra
+        where auth.authId=ra.authId and ra.roleId=#{0}
+        order by auth.authId limit #{1},#{2}
+    </select>
+
+    <select id="getCountOptionalAuth" parameterType="Integer" resultType="int">
+       select count(1) from sys_authority auth
+        where auth.authId not in(
+        select distinct(ra.authId) from sys_role_authority ra where ra.roleId=#{roleId})
+    </select>
+
+    <select id="getoptionalAuthByRoleId" parameterType="Integer" resultMap="BaseResultMap">
+       select distinct(auth.authId),auth.authName,auth.authCode
+        from sys_authority auth
+        where auth.authId not in(
+        select distinct(ra.authId) from sys_role_authority ra where ra.roleId=#{0})
+        order by auth.authId limit #{1},#{2}
+    </select>
+
+
+    <insert id="addAuthority" parameterType="com.zhangnx.system.pojo.Authority" useGeneratedKeys="true" keyProperty="authId" >
+        insert into sys_authority(authName,authCode) values(#{authName},#{authCode})
+    </insert>
+
+    <insert id="addAuthorityToRole" >
+        insert into sys_role_authority(roleId,authId) values(#{0},#{1})
+    </insert>
+
+    <update id="editAuthority" parameterType="com.zhangnx.system.pojo.Authority">
+        update sys_authority set authName=#{authName},authCode=#{authCode} where authId=#{authId}
+    </update>
+
+    <delete id="delAuthority" parameterType="Integer">
+        delete from sys_authority where authId=#{authId}
+    </delete>
+
+    <delete id="removeAuthorityToRole">
+        delete from sys_role_authority where roleId=#{0} and authId=#{1}
+    </delete>
+
+</mapper>

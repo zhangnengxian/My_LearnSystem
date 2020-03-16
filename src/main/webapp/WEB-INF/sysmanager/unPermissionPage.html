@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body><script src="/demos/googlegg.js"></script>
+
+<style>
+    body{text-align:center;}
+    #phone{width:100%;margin:0 auto;display:inline-block;margin:50px;
+        font-size:80px;font-weight:bold; color:rgba(0,0,0,0.3);
+        background:-webkit-linear-gradient(-30deg,rgba(255,255,255,0) 100px,
+        rgba(0,0,0,0.4) 180px,rgba(255,0,0,0.4) 240px,
+        rgba(255,255,255,0) 300px) -300px 0 no-repeat; -webkit-background-clip:text;}
+</style>
+
+<div id="phone">无权访问</div>
+
+<script language="javascript">
+    var ph=document.getElementById("phone");
+    var otime=null;
+    var num=-300;
+    function tomove(){
+
+        otime=setInterval(function (){
+            num+=10;
+            if(num==1100)
+            {
+                num=-300;
+                clearInterval(otime);
+            }
+            ph.style.backgroundPosition=num+"px 0px";
+
+        },20)
+    }
+    tomove();
+    setInterval(function(){
+        tomove();
+    },3000);
+</script>
+
+</body>
+</html>
